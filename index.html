@@ -1,0 +1,656 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07111f">
+<title>Analisis 4D PRO - Statistik</title>
+<style>
+:root {
+  --bg:#07111f;
+  --card:#101d30;
+  --border:#243752;
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+  --accent:#38bdf8;
+  --green:#34d399;
+  --orange:#fbbf24;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:14px;
+  line-height:1.5;
+}
+.app { max-width:760px; margin:auto; padding:16px; }
+header { text-align:center; padding:16px 0 22px; }
+header h1 { margin:0; font-size:27px; letter-spacing:.5px; }
+header p { color:var(--muted); margin:7px 0 0; }
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:16px;
+  margin-bottom:15px;
+  min-width:0;
+}
+h2 { font-size:17px; margin:0 0 12px; }
+h3 { font-size:14px; margin:0 0 10px; }
+.muted { color:var(--muted); font-size:12px; }
+textarea {
+  display:block;
+  width:100%;
+  min-height:175px;
+  resize:vertical;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#081525;
+  color:var(--text);
+  padding:12px;
+  font:14px/1.8 monospace;
+  outline:none;
+}
+textarea:focus { border-color:var(--accent); }
+button {
+  border:0;
+  border-radius:9px;
+  padding:12px 15px;
+  font-weight:bold;
+  font-size:13px;
+  cursor:pointer;
+}
+button:active { transform:scale(.98); }
+.primary { background:var(--accent); color:#062033; }
+.secondary { background:#26364c; color:var(--text); }
+.actions { display:flex; gap:9px; margin-top:12px; }
+.actions button { flex:1; }
+.notice {
+  padding:11px;
+  border:1px solid #785e23;
+  background:#302713;
+  border-radius:9px;
+  color:#fde68a;
+  font-size:12px;
+  margin-top:12px;
+}
+.error {
+  padding:11px;
+  border:1px solid #9f4141;
+  background:#351d27;
+  color:#fecaca;
+  border-radius:9px;
+  margin-bottom:15px;
+  overflow-wrap:anywhere;
+}
+.hidden { display:none !important; }
+.stats {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  margin-bottom:15px;
+}
+.stat {
+  background:#0a1728;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 8px;
+  text-align:center;
+}
+.stat strong { display:block; font-size:22px; color:var(--accent); }
+.stat span { color:var(--muted); font-size:11px; }
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th,td {
+  padding:10px 8px;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+th { color:var(--muted); font-weight:600; }
+td:first-child,th:first-child { text-align:left; }
+.digit {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:29px;
+  height:29px;
+  background:#1c3550;
+  color:#e0f2fe;
+  border-radius:7px;
+  font-weight:bold;
+  margin:2px;
+}
+.pill {
+  display:inline-block;
+  padding:4px 8px;
+  background:#173c35;
+  color:#a7f3d0;
+  border-radius:6px;
+  font-size:12px;
+}
+.bar-row {
+  display:grid;
+  grid-template-columns:26px minmax(0,1fr) 38px;
+  gap:8px;
+  align-items:center;
+  margin:10px 0;
+}
+.bar-label { font-weight:bold; text-align:center; }
+.bar-track { background:#07111f; height:14px; border-radius:8px; overflow:hidden; }
+.bar {
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,#0284c7,#38bdf8);
+  border-radius:8px;
+}
+.bar-value { color:var(--muted); text-align:right; font-size:12px; }
+.position-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.position {
+  background:#0a1728;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  min-width:0;
+}
+.position p { margin:0 0 7px; color:var(--muted); font-size:11px; }
+.digit-list { display:flex; flex-wrap:wrap; gap:3px; }
+.digit-list .digit { margin:0; }
+.combo-list { display:grid; gap:8px; }
+.combo {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  background:#0a1728;
+  border:1px solid var(--border);
+  border-radius:9px;
+  padding:11px 12px;
+}
+.combo-number { font:bold 20px monospace; letter-spacing:2px; }
+.combo small { color:var(--muted); text-align:right; }
+.bbfs {
+  font:bold 27px monospace;
+  letter-spacing:5px;
+  color:var(--green);
+  overflow-wrap:anywhere;
+}
+footer { text-align:center; color:var(--muted); font-size:11px; padding:8px 0 22px; }
+@media(max-width:420px) {
+  .app { padding:11px; }
+  .card { padding:12px; }
+  header h1 { font-size:23px; }
+  .position-grid { gap:7px; }
+  .position { padding:9px; }
+  .stat strong { font-size:19px; }
+  .combo-number { font-size:18px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>ANALISIS 4D PRO</h1>
+    <p>Kalkulator Statistik Frekuensi & Posisi</p>
+  </header>
+
+  <section class="card">
+    <h2>01. Input Hasil Historis</h2>
+    <p class="muted">
+      Masukkan hasil 4 digit, satu hasil per baris. Nol di depan
+      tetap dipertahankan. Maksimal 5.000 hasil.
+    </p>
+    <textarea id="history" spellcheck="false"
+      placeholder="Contoh:
+0929
+1838
+2747
+3656
+4565
+5474"></textarea>
+    <div class="actions">
+      <button class="primary" id="calculate">HITUNG ANALISIS</button>
+      <button class="secondary" id="reset">RESET</button>
+    </div>
+    <div class="notice">
+      Analisis berdasarkan frekuensi historis. Hasil tidak menjamin
+      atau meningkatkan kepastian prediksi pada undian acak.
+    </div>
+  </section>
+
+  <div id="error" class="error hidden" role="alert"></div>
+
+  <div id="results" class="hidden">
+    <section class="card">
+      <h2>02. Ringkasan Analisis</h2>
+      <div class="stats">
+        <div class="stat">
+          <strong id="total">0</strong>
+          <span>Total hasil valid</span>
+        </div>
+        <div class="stat">
+          <strong id="unique">0</strong>
+          <span>Hasil berbeda</span>
+        </div>
+        <div class="stat">
+          <strong id="most">-</strong>
+          <span>Angka paling sering</span>
+        </div>
+      </div>
+      <p class="muted" id="rangeInfo"></p>
+    </section>
+
+    <section class="card">
+      <h2>03. Grafik Frekuensi Angka 0–9</h2>
+      <p class="muted">
+        Jumlah kemunculan setiap digit di seluruh posisi.
+      </p>
+      <div id="chart"></div>
+    </section>
+
+    <section class="card">
+      <h2>04. Peringkat Angka Terkuat–Terlemah</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Peringkat</th>
+              <th>Digit</th>
+              <th>Frekuensi</th>
+              <th>Persentase</th>
+            </tr>
+          </thead>
+          <tbody id="ranking"></tbody>
+        </table>
+      </div>
+      <p class="muted">
+        Peringkat hanya mencerminkan data yang dimasukkan.
+        Jika skornya sama, digit yang lebih kecil ditampilkan dahulu.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>05. BBFS 6 Digit</h2>
+      <p class="muted">
+        Enam digit dengan frekuensi keseluruhan tertinggi,
+        tanpa pengulangan digit.
+      </p>
+      <div class="bbfs" id="bbfs">------</div>
+      <p class="muted" id="bbfsInfo"></p>
+    </section>
+
+    <section class="card">
+      <h2>06. Angka Tarung per Posisi</h2>
+      <p class="muted">
+        AS = digit pertama; COP = digit kedua;
+        KEPALA = digit ketiga; EKOR = digit keempat.
+        Setiap posisi menampilkan enam digit teratas.
+      </p>
+      <div class="position-grid" id="positions"></div>
+    </section>
+
+    <section class="card">
+      <h2>07. Top 4D — 10 Kombinasi Skor</h2>
+      <p class="muted">
+        Skor adalah penjumlahan frekuensi digit pada masing-masing
+        posisi. Semua kombinasi 0000–9999 diperiksa, lalu sepuluh
+        skor tertinggi ditampilkan. Kombinasi dengan skor sama
+        diurutkan secara numerik.
+      </p>
+      <div class="combo-list" id="combos"></div>
+    </section>
+
+    <section class="card">
+      <h2>08. Frekuensi Tiap Posisi</h2>
+      <p class="muted">
+        Persentase dihitung dari jumlah hasil valid.
+        Setiap digit pada setiap posisi memiliki 10 kemungkinan.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Digit</th>
+              <th>AS</th>
+              <th>COP</th>
+              <th>KEPALA</th>
+              <th>EKOR</th>
+            </tr>
+          </thead>
+          <tbody id="positionTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Catatan Statistik</h2>
+      <p class="muted">
+        Frekuensi historis bukan probabilitas pasti untuk hasil
+        berikutnya. Dalam undian 4 digit yang adil, setiap kombinasi
+        tertentu memiliki peluang 1 dari 10.000 (0,01%) pada satu
+        undian, dengan asumsi semua hasil sama mungkin dan independen.
+        Data masa lalu tidak memastikan hasil masa depan.
+      </p>
+    </section>
+  </div>
+
+  <footer>
+    ANALISIS 4D PRO • Kalkulator statistik lokal • Tidak memerlukan server
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+function showError(message) {
+  $("error").textContent = message;
+  $("error").classList.remove("hidden");
+}
+
+function clearError() {
+  $("error").textContent = "";
+  $("error").classList.add("hidden");
+}
+
+function makeDigit(value) {
+  const el = document.createElement("span");
+  el.className = "digit";
+  el.textContent = String(value);
+  return el;
+}
+
+function makeCell(value) {
+  const el = document.createElement("td");
+  el.textContent = String(value);
+  return el;
+}
+
+function getCounts(results) {
+  const overall = Array(10).fill(0);
+  const positions = Array.from(
+    { length: 4 }, () => Array(10).fill(0)
+  );
+
+  results.forEach(number => {
+    for (let i = 0; i < 4; i++) {
+      const digit = Number(number[i]);
+      overall[digit]++;
+      positions[i][digit]++;
+    }
+  });
+
+  return { overall, positions };
+}
+
+function rankDigits(counts) {
+  return Array.from({ length: 10 }, (_, digit) => digit)
+    .sort((a, b) => counts[b] - counts[a] || a - b);
+}
+
+function renderChart(counts, totalDigits) {
+  const chart = $("chart");
+  chart.replaceChildren();
+  const max = Math.max(...counts, 1);
+
+  for (let digit = 0; digit < 10; digit++) {
+    const row = document.createElement("div");
+    row.className = "bar-row";
+
+    const label = document.createElement("div");
+    label.className = "bar-label";
+    label.textContent = digit;
+
+    const track = document.createElement("div");
+    track.className = "bar-track";
+
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.width = (counts[digit] / max * 100) + "%";
+    track.appendChild(bar);
+
+    const value = document.createElement("div");
+    value.className = "bar-value";
+    value.textContent = totalDigits
+      ? (counts[digit] / totalDigits * 100).toFixed(1) + "%"
+      : "0%";
+    value.title = counts[digit] + " kemunculan";
+
+    row.append(label, track, value);
+    chart.appendChild(row);
+  }
+}
+
+function renderRanking(counts, totalDigits) {
+  const tbody = $("ranking");
+  tbody.replaceChildren();
+  const ranking = rankDigits(counts);
+
+  ranking.forEach((digit, index) => {
+    const tr = document.createElement("tr");
+    tr.append(
+      makeCell(index + 1),
+      makeCell(digit),
+      makeCell(counts[digit]),
+      makeCell(
+        totalDigits
+          ? (counts[digit] / totalDigits * 100).toFixed(2) + "%"
+          : "0%"
+      )
+    );
+    tbody.appendChild(tr);
+  });
+
+  return ranking;
+}
+
+function renderBBFS(ranking, counts) {
+  const selected = ranking.slice(0, 6);
+  $("bbfs").textContent = selected.join("");
+  $("bbfsInfo").textContent =
+    "Urutan berdasarkan frekuensi menurun. Frekuensi digit: " +
+    selected.map(d => d + " (" + counts[d] + ")").join(", ") + ".";
+}
+
+function renderPositions(positionCounts, total) {
+  const container = $("positions");
+  container.replaceChildren();
+
+  const labels = ["AS", "COP", "KEPALA", "EKOR"];
+
+  positionCounts.forEach((counts, index) => {
+    const card = document.createElement("div");
+    card.className = "position";
+
+    const title = document.createElement("h3");
+    title.textContent = labels[index];
+
+    const note = document.createElement("p");
+    note.textContent = "6 kandidat teratas";
+
+    const list = document.createElement("div");
+    list.className = "digit-list";
+
+    rankDigits(counts).slice(0, 6).forEach(digit => {
+      list.appendChild(makeDigit(digit));
+    });
+
+    card.append(title, note, list);
+    container.appendChild(card);
+  });
+
+  const tbody = $("positionTable");
+  tbody.replaceChildren();
+
+  for (let digit = 0; digit < 10; digit++) {
+    const tr = document.createElement("tr");
+    tr.appendChild(makeCell(digit));
+
+    positionCounts.forEach(counts => {
+      const percentage = total
+        ? (counts[digit] / total * 100).toFixed(1) + "%"
+        : "0%";
+      tr.appendChild(makeCell(counts[digit] + " / " + percentage));
+    });
+
+    tbody.appendChild(tr);
+  }
+}
+
+function getTopCombinations(positionCounts) {
+  const all = [];
+
+  // Enumerasi 0000 hingga 9999.
+  for (let n = 0; n < 10000; n++) {
+    const number = String(n).padStart(4, "0");
+    let score = 0;
+
+    for (let pos = 0; pos < 4; pos++) {
+      score += positionCounts[pos][Number(number[pos])];
+    }
+
+    all.push({ number, score });
+  }
+
+  all.sort((a, b) =>
+    b.score - a.score ||
+    Number(a.number) - Number(b.number)
+  );
+
+  return all.slice(0, 10);
+}
+
+function renderCombinations(combinations, total) {
+  const container = $("combos");
+  container.replaceChildren();
+
+  combinations.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "combo";
+
+    const left = document.createElement("div");
+    left.style.display = "flex";
+    left.style.alignItems = "center";
+    left.style.gap = "12px";
+
+    const rank = document.createElement("span");
+    rank.className = "pill";
+    rank.textContent = "#" + (index + 1);
+
+    const number = document.createElement("span");
+    number.className = "combo-number";
+    number.textContent = item.number;
+
+    left.append(rank, number);
+
+    const right = document.createElement("div");
+    right.style.textAlign = "right";
+
+    const score = document.createElement("strong");
+    score.textContent = "Skor " + item.score;
+
+    const detail = document.createElement("small");
+    detail.style.display = "block";
+    detail.textContent = total
+      ? "Dari " + total + " hasil"
+      : "Belum ada data";
+
+    right.append(score, detail);
+    row.append(left, right);
+    container.appendChild(row);
+  });
+}
+
+function calculate() {
+  clearError();
+
+  const raw = $("history").value.trim();
+  if (!raw) {
+    $("results").classList.add("hidden");
+    showError("Masukkan setidaknya satu hasil 4 digit.");
+    return;
+  }
+
+  const lines = raw.split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  if (lines.length > 5000) {
+    $("results").classList.add("hidden");
+    showError("Maksimal 5.000 baris hasil.");
+    return;
+  }
+
+  const results = [];
+  const invalid = [];
+
+  lines.forEach((line, index) => {
+    // Baris harus tepat empat digit. Pemisah atau karakter lain ditolak.
+    if (/^\d{4}$/.test(line)) {
+      results.push(line);
+    } else {
+      invalid.push("Baris " + (index + 1) + ": " + line);
+    }
+  });
+
+  if (invalid.length) {
+    $("results").classList.add("hidden");
+    const preview = invalid.slice(0, 5).join(" • ");
+    showError(
+      "Ada baris yang tidak valid. Setiap baris wajib tepat 4 digit " +
+      "termasuk nol di depan. " + preview +
+      (invalid.length > 5 ? " • dan " + (invalid.length - 5) + " lainnya." : "")
+    );
+    return;
+  }
+
+  if (!results.length) {
+    $("results").classList.add("hidden");
+    showError("Tidak ditemukan hasil 4 digit yang valid.");
+    return;
+  }
+
+  const { overall, positions } = getCounts(results);
+  const totalDigits = results.length * 4;
+  const ranking = renderRanking(overall, totalDigits);
+  const most = ranking[0];
+
+  $("total").textContent = results.length;
+  $("unique").textContent = new Set(results).size;
+  $("most").textContent = most + " (" + overall[most] + ")";
+  $("rangeInfo").textContent =
+    "Total digit dianalisis: " + totalDigits +
+    ". Total frekuensi setiap posisi: " + results.length + ".";
+
+  renderChart(overall, totalDigits);
+  renderBBFS(ranking, overall);
+  renderPositions(positions, results.length);
+
+  const combinations = getTopCombinations(positions);
+  renderCombinations(combinations, results.length);
+
+  $("results").classList.remove("hidden");
+  $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function resetAll() {
+  $("history").value = "";
+  $("results").classList.add("hidden");
+  clearError();
+  $("history").focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+$("calculate").addEventListener("click", calculate);
+$("reset").addEventListener("click", resetAll);
+</script>
+</body>
+</html>
